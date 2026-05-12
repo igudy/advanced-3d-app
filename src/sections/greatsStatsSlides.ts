@@ -10,18 +10,7 @@ export type GreatStatSlide = Great & {
 }
 
 const FB: StatLine[][] = [
-  [
-    { label: 'Career goals', value: '1,281+' },
-    { label: 'FIFA World Cups', value: '3' },
-    { label: 'Brazil caps', value: '92' },
-    { label: 'Ballon d’Or', value: '7' },
-  ],
-  [
-    { label: 'World Cup', value: '1986 · Argentina' },
-    { label: 'FIFA Goal of Century', value: '2002 poll' },
-    { label: 'Argentina caps', value: '91' },
-    { label: 'Clubs', value: 'Boca · Barça · Napoli' },
-  ],
+  // Order matches FOOTBALL.greats: Messi, Ronaldo, Pelé, Maradona
   [
     { label: 'Ballon d’Or', value: '8' },
     { label: 'World Cup', value: '2022 · Golden Ball' },
@@ -33,6 +22,18 @@ const FB: StatLine[][] = [
     { label: 'UEFA Champions League', value: '5' },
     { label: 'Ballon d’Or', value: '5' },
     { label: 'Nations League', value: '2019' },
+  ],
+  [
+    { label: 'Career goals', value: '1,281+' },
+    { label: 'FIFA World Cups', value: '3' },
+    { label: 'Brazil caps', value: '92' },
+    { label: 'Ballon d’Or', value: '7' },
+  ],
+  [
+    { label: 'World Cup', value: '1986 · Argentina' },
+    { label: 'FIFA Goal of Century', value: '2002 poll' },
+    { label: 'Argentina caps', value: '91' },
+    { label: 'Clubs', value: 'Boca · Barça · Napoli' },
   ],
 ]
 

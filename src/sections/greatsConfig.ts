@@ -11,12 +11,21 @@ export type Great = {
   image: string
 }
 
+export type SportTrophy = {
+  /** Short label under the photo (e.g. “FIFA World Cup”) */
+  label: string
+  image: string
+  alt: string
+}
+
 export type SportConfig = {
   id: 'football' | 'basketball' | 'tennis'
   eyebrowNum: string
   eyebrowLabel: string
   title: { line1: string; line2: string }
   lede: string
+  /** Signature hardware for this chapter (Wikimedia photo). */
+  trophy: SportTrophy
   greats: Great[]
 }
 
@@ -26,25 +35,13 @@ export const FOOTBALL: SportConfig = {
   eyebrowLabel: 'Football',
   title: { line1: 'GOAL', line2: 'MACHINES.' },
   lede: 'Five-time World Cup winners. Ballon d’Or dynasties. The boys who turned 22 men chasing a ball into religion.',
+  trophy: {
+    label: 'FIFA World Cup',
+    alt: 'FIFA World Cup trophy',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/FIFA_World_Cup_Trophy_%28cropped%29.jpg/800px-FIFA_World_Cup_Trophy_%28cropped%29.jpg',
+  },
   greats: [
-    {
-      name: 'Pelé',
-      nick: 'The King',
-      country: 'Brazil',
-      honor: '1281 goals · 3 World Cups',
-      number: '10',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg',
-    },
-    {
-      name: 'Maradona',
-      nick: 'El Diego',
-      country: 'Argentina',
-      honor: 'Hand of God · ’86 lone savior',
-      number: '10',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Maradona_1986_vs_italy.jpg/500px-Maradona_1986_vs_italy.jpg',
-    },
     {
       name: 'Messi',
       nick: 'La Pulga',
@@ -63,6 +60,24 @@ export const FOOTBALL: SportConfig = {
       image:
         'https://upload.wikimedia.org/wikipedia/commons/9/9c/President_Donald_Trump_meets_with_Cristiano_Ronaldo_in_the_Oval_Office_%2854933344262%29_%28cropped_and_rotated%29.jpg',
     },
+    {
+      name: 'Pelé',
+      nick: 'The King',
+      country: 'Brazil',
+      honor: '1281 goals · 3 World Cups',
+      number: '10',
+      image:
+        'https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg',
+    },
+    {
+      name: 'Maradona',
+      nick: 'El Diego',
+      country: 'Argentina',
+      honor: 'Hand of God · ’86 lone savior',
+      number: '10',
+      image:
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Maradona_1986_vs_italy.jpg/500px-Maradona_1986_vs_italy.jpg',
+    },
   ],
 }
 
@@ -72,6 +87,12 @@ export const BASKETBALL: SportConfig = {
   eyebrowLabel: 'Basketball',
   title: { line1: 'HARD', line2: 'COURT KINGS.' },
   lede: 'Six rings without a Game 7 loss. 40k career points. Mamba mentality. Hardwood gods on 94 feet of polished maple.',
+  trophy: {
+    label: 'Larry O’Brien trophy',
+    alt: 'NBA Larry O’Brien Championship Trophy',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Larry_O%27Brien_NBA_Championship_Trophy.jpg/800px-Larry_O%27Brien_NBA_Championship_Trophy.jpg',
+  },
   greats: [
     {
       name: 'Jordan',
@@ -116,6 +137,12 @@ export const TENNIS: SportConfig = {
   eyebrowLabel: 'Tennis',
   title: { line1: 'BASELINE', line2: 'IMMORTALS.' },
   lede: 'Big Three. Twenty-plus slams each. Plus the woman who beat the men’s rankings while breaking the sport open.',
+  trophy: {
+    label: 'Wimbledon · Gentlemen’s singles',
+    alt: 'Wimbledon Championships gentlemen’s singles trophy',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/1/1a/Gentlemen%27s_Singles_Trophy_Wimbledon_2023.jpg',
+  },
   greats: [
     {
       name: 'Federer',

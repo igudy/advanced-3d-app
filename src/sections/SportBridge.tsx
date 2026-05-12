@@ -22,7 +22,7 @@ export function SportBridge({
     <section
       id={id}
       data-surface={surface}
-      className="relative w-full min-h-[72vh] px-5.5 sm:px-9 lg:px-16 flex flex-col justify-center py-20 sm:py-24 overflow-hidden scroll-mt-24 border-y-4 border-ink/20"
+      className="relative w-full min-h-[72vh] px-5.5 sm:px-9 lg:px-16 flex flex-col justify-center py-20 sm:py-24 overflow-hidden scroll-mt-24 border-y-4 border-ink/20 pointer-events-auto"
     >
       <div className="max-w-5xl mx-auto w-full">
         <div className="eyebrow">{eyebrow}</div>

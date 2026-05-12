@@ -1,5 +1,6 @@
 import {
   Loader,
+  Material,
   Mesh,
   MeshPhongMaterial,
   MeshPhysicalMaterial,
@@ -12,7 +13,7 @@ import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
 
 const BASE = '/models/basketball/'
-const MTL_FILE = 'NBA BASKETBALL.mtl'
+const MTL_FILE = 'nba-ball.mtl'
 
 function upgradePhongToPhysical(root: Object3D) {
   root.traverse((child) => {
@@ -44,6 +45,7 @@ function upgradePhongToPhysical(root: Object3D) {
         clearcoatRoughness: 0.62,
         envMapIntensity: 0.48,
         transparent: true,
+        opacity: 1,
         depthWrite: true,
       })
     }
@@ -61,6 +63,30 @@ function upgradePhongToPhysical(root: Object3D) {
   })
 }
 
+/** Solid fallback if MTL / textures fail — still shows a ball in frame. */
+function applyFallbackBasketballMaterial(root: Object3D) {
+  root.traverse((child) => {
+    const mesh = child as Mesh
+    if (!mesh.isMesh) return
+    const disposeMat = (m: Material | Material[]) => {
+      if (Array.isArray(m)) m.forEach((x) => x.dispose())
+      else m.dispose()
+    }
+    if (mesh.material) disposeMat(mesh.material as Material | Material[])
+    mesh.material = new MeshPhysicalMaterial({
+      color: '#c45c1a',
+      roughness: 0.88,
+      metalness: 0.02,
+      clearcoat: 0.06,
+      clearcoatRoughness: 0.55,
+      envMapIntensity: 0.45,
+      transparent: true,
+      opacity: 1,
+      depthWrite: true,
+    })
+  })
+}
+
 /** Loads NBA basketball.obj with its MTL + texture maps (correct UV atlas). */
 export class BasketballOBJLoader extends Loader {
   constructor(manager?: LoadingManager) {
@@ -74,6 +100,20 @@ export class BasketballOBJLoader extends Loader {
     onError?: (err: unknown) => void,
   ) {
     const manager = this.manager
+
+    const loadBareObj = () => {
+      const objLoader = new OBJLoader(manager)
+      objLoader.load(
+        url,
+        (object) => {
+          applyFallbackBasketballMaterial(object)
+          onLoad(object)
+        },
+        onProgress,
+        onError,
+      )
+    }
+
     const mtlLoader = new MTLLoader(manager)
     mtlLoader.setPath(BASE)
 
@@ -90,16 +130,23 @@ export class BasketballOBJLoader extends Loader {
               upgradePhongToPhysical(object)
               onLoad(object)
             } catch (e) {
-              if (onError) onError(e)
-              else console.error(e)
+              console.warn('[BasketballOBJLoader] upgrade failed, using fallback material', e)
+              applyFallbackBasketballMaterial(object)
+              onLoad(object)
             }
           },
           onProgress,
-          onError,
+          (err) => {
+            console.warn('[BasketballOBJLoader] OBJ with MTL failed, loading bare OBJ', err)
+            loadBareObj()
+          },
         )
       },
       onProgress,
-      onError,
+      (err) => {
+        console.warn('[BasketballOBJLoader] MTL failed, loading bare OBJ', err)
+        loadBareObj()
+      },
     )
   }
 }

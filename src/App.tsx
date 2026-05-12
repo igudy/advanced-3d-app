@@ -3,6 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Frame } from './components/Frame'
 import { Nav } from './components/Nav'
 import { Hero } from './sections/Hero'
+import { TheGreatsIntro } from './sections/TheGreatsIntro'
 import { SportGreats } from './sections/Greats'
 import { FOOTBALL, BASKETBALL, TENNIS } from './sections/greatsConfig'
 import { SportBridge } from './sections/SportBridge'
@@ -16,6 +17,7 @@ import {
 import { LoadingCurtain } from './components/LoadingCurtain'
 import { initScroll } from './hooks/scrollSignal'
 import { useSportSurface } from './hooks/useSportSurface'
+import { ThemeProvider } from './theme/ThemeProvider'
 import './App.css'
 
 const Scene = lazy(() => import('./three/Scene').then((m) => ({ default: m.Scene })))
@@ -67,6 +69,7 @@ function App() {
   }, [showLoader])
 
   return (
+    <ThemeProvider>
     <div className="relative w-full max-w-full overflow-x-hidden bg-bg min-h-screen">
       <LoadingCurtain show={showLoader} progress={assets.progress} />
 
@@ -79,6 +82,8 @@ function App() {
 
       <main className="relative z-10 w-full max-w-full overflow-x-hidden">
         <Hero />
+
+        <TheGreatsIntro />
 
         <SportBridge
           id="football-prelude"
@@ -98,6 +103,7 @@ function App() {
           eyebrow="Football · tape"
           titleLine1="TAPE"
           titleLine2="DOESN’T LIE."
+          trophy={FOOTBALL.trophy}
         />
 
         <SportBridge
@@ -126,6 +132,7 @@ function App() {
           eyebrow="Basketball · tape"
           titleLine1="WOOD"
           titleLine2="DOESN’T LIE."
+          trophy={BASKETBALL.trophy}
         />
 
         <SportBridge
@@ -154,6 +161,7 @@ function App() {
           eyebrow="Tennis · tape"
           titleLine1="FELT"
           titleLine2="DOESN’T LIE."
+          trophy={TENNIS.trophy}
         />
 
         <SportBridge
@@ -167,6 +175,7 @@ function App() {
         <CTASection />
       </main>
     </div>
+    </ThemeProvider>
   )
 }
 

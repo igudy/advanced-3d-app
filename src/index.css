@@ -59,6 +59,10 @@ body {
   background: var(--color-bg);
 }
 
+html[data-ui='night'] {
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -118,7 +122,7 @@ body::-webkit-scrollbar {
     margin-bottom: 22px;
   }
 
-  /* Ghost word backdrop — only used on hero (center via wrapper so GSAP can own transform) */
+  /* Ghost word — hero centerpiece */
   .ghost-word {
     @apply font-display uppercase select-none whitespace-nowrap;
     font-size: clamp(120px, 20vw, 380px);

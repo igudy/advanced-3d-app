@@ -20,7 +20,8 @@ function ProgressBroadcast() {
  *  - Camera at z=5.0 so a ~1.6u ball fills ~45% of viewport.
  *  - Inner <Suspense> for the HDRI; while it streams in, the ball still renders
  *    with explicit lights so nothing pops in/out.
- *  - Outer <Suspense> at the App boundary catches the FBX/OBJ + texture loads.
+ *  - <Ball3D> has its own <Suspense> so FBX/OBJ/MTL loads do not replace the entire
+ *    Canvas (App still wraps <Scene /> in Suspense for the lazy chunk + HDRI).
  */
 export function Scene() {
   useLayoutEffect(() => {
@@ -40,6 +41,9 @@ export function Scene() {
         depth: true,
       }}
       shadows={false}
+      onCreated={({ gl }) => {
+        gl.setClearColor(0x000000, 0)
+      }}
     >
       <ProgressBroadcast />
 
@@ -53,7 +57,14 @@ export function Scene() {
         <Environment preset="studio" environmentIntensity={0.55} />
       </Suspense>
 
-      <Ball3D />
+      {/*
+        Ball loads last (FBX + MTL/OBJ + canvas textures). If this suspends at the
+        same boundary as <Scene />, the whole Canvas is replaced by App’s fallback
+        and nothing draws. Keep suspense local so lights + clear still run.
+      */}
+      <Suspense fallback={null}>
+        <Ball3D />
+      </Suspense>
 
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />

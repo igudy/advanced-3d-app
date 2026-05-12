@@ -71,7 +71,9 @@
   width: 100% !important;
   height: 100vh !important;
   z-index: 2;
-  pointer-events: none;
+  /* Hero uses pointer-events: none so drags in open sky hit the ball */
+  pointer-events: auto;
+  touch-action: pan-y;
 }
 
 .scene-fallback {

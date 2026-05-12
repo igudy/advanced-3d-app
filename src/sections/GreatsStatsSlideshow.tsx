@@ -8,9 +8,10 @@ import {
   type KeyboardEvent,
 } from 'react'
 import gsap from 'gsap'
+import type { SportTrophy } from './greatsConfig'
 import type { GreatStatSlide } from './greatsStatsSlides'
 
-const AUTO_MS = 6200
+const AUTO_MS = 3000
 
 const accentBySport: Record<
   GreatStatSlide['sportKey'],
@@ -34,6 +35,7 @@ export type SportStatsSlideshowProps = {
   eyebrow: string
   titleLine1: string
   titleLine2: string
+  trophy: SportTrophy
 }
 
 export function SportStatsSlideshow({
@@ -43,6 +45,7 @@ export function SportStatsSlideshow({
   eyebrow,
   titleLine1,
   titleLine2,
+  trophy,
 }: SportStatsSlideshowProps) {
   const n = slides.length
   const [index, setIndex] = useState(0)
@@ -160,7 +163,7 @@ export function SportStatsSlideshow({
       role="region"
       aria-roledescription="carousel"
       aria-label={`${surface} legends — stats slideshow`}
-      className="relative w-full min-h-[min(88vh,760px)] px-5.5 sm:px-9 lg:px-16 py-16 sm:py-22 overflow-hidden scroll-mt-24 outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
+      className="relative w-full min-h-[min(88vh,760px)] px-5.5 sm:px-9 lg:px-16 py-16 sm:py-22 overflow-hidden scroll-mt-24 outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg pointer-events-auto"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -169,7 +172,20 @@ export function SportStatsSlideshow({
       }}
       onKeyDown={onKeyDown}
     >
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="max-w-7xl mx-auto w-full relative">
+        <div
+          className="absolute right-0 top-0 z-10 hidden md:flex flex-col items-center gap-1 w-[5.5rem] lg:w-[6.25rem] border-4 border-ink bg-paper p-2 shadow-brutal-md"
+          aria-hidden
+        >
+          <img
+            src={trophy.image}
+            alt=""
+            className="w-full aspect-square object-contain p-0.5"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
         <div className="eyebrow mb-5">{eyebrow}</div>
         <h2 className="section-title !text-[clamp(36px,7.5vw,110px)] mb-8 max-w-4xl">
           {titleLine1}
@@ -194,49 +210,71 @@ export function SportStatsSlideshow({
                 decoding="async"
               />
               <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    'linear-gradient(to top, rgba(10,10,10,0.82) 0%, rgba(10,10,10,0.12) 45%, transparent 100%)',
-                }}
+                className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/88 via-black/20 to-transparent"
                 aria-hidden
               />
-              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7 flex flex-col gap-1">
-                <div
-                  className={`font-ui font-bold text-[10px] tracking-[0.28em] uppercase ${accent.bar} text-ink w-max px-2 py-1 border-2 border-ink`}
-                >
-                  {slide.sportLabel}
-                </div>
-                <div className="font-display text-3xl sm:text-4xl lg:text-5xl uppercase tracking-[-0.02em] text-paper leading-[0.95]">
-                  {slide.name}
-                </div>
-                <div className="font-ui font-semibold text-sm text-paper/85">
-                  {slide.nick} · {slide.country}
+              <div className="absolute bottom-0 left-0 right-0 z-[3] p-5 sm:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6">
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className={`font-ui font-bold text-[9px] tracking-[0.3em] uppercase ${accent.bar} text-ink w-max px-2.5 py-1 border-2 border-ink mb-3`}
+                    >
+                      {slide.sportLabel}
+                    </div>
+                    <h3 className="font-display text-[clamp(1.75rem,5vw,3.25rem)] uppercase tracking-[-0.04em] text-paper leading-[0.92]">
+                      {slide.name}
+                    </h3>
+                  </div>
+                  <div className="shrink-0 sm:text-right sm:max-w-[12rem]">
+                    <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-paper/55 mb-1">Alias</p>
+                    <p className="font-ui font-semibold text-sm text-accent leading-tight">{slide.nick}</p>
+                    <p className="font-ui text-[11px] text-paper/80 mt-2 tracking-wide">{slide.country}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="perspective-title flex flex-col justify-between p-6 sm:p-8 lg:p-10 min-h-[380px] lg:min-h-0">
               <div ref={stageRef}>
-                <p className="font-ui font-medium text-fg/90 text-[15px] sm:text-base leading-[1.5] mb-8 max-w-md border-l-4 border-ink pl-4">
-                  {slide.honor}
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                  {slide.stats.map((s) => (
-                    <div
-                      key={s.label}
-                      className="stat-slide-row border-4 border-ink bg-paper px-4 py-3 shadow-brutal-sm"
-                    >
-                      <div className="font-ui font-bold text-[9px] tracking-[0.22em] uppercase text-ink/55 mb-1">
-                        {s.label}
-                      </div>
-                      <div className="font-display text-xl sm:text-2xl uppercase tracking-[0.02em] text-ink leading-tight">
-                        {s.value}
-                      </div>
-                    </div>
-                  ))}
+                <div className="mb-8 max-w-lg">
+                  <span className="font-mono text-[9px] tracking-[0.35em] uppercase text-fg/50 block mb-2">
+                    Legacy line
+                  </span>
+                  <p className="font-ui font-medium text-fg text-[15px] sm:text-[17px] leading-[1.55]">
+                    {slide.honor}
+                  </p>
                 </div>
+
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 list-none p-0 m-0">
+                  {slide.stats.map((s, j) => {
+                    const alt = j % 2 === 1
+                    return (
+                      <li
+                        key={s.label}
+                        className={`stat-slide-row border-4 border-ink px-4 py-3.5 shadow-brutal-sm flex flex-col gap-1 ${
+                          alt
+                            ? 'bg-ink text-paper'
+                            : 'bg-paper text-ink'
+                        }`}
+                      >
+                        <span
+                          className={`font-ui font-bold text-[8px] tracking-[0.26em] uppercase ${
+                            alt ? 'text-paper/55' : 'text-ink/50'
+                          }`}
+                        >
+                          {s.label}
+                        </span>
+                        <span
+                          className={`font-display text-lg sm:text-xl uppercase tracking-tight leading-tight ${
+                            alt ? 'text-accent' : 'text-ink'
+                          }`}
+                        >
+                          {s.value}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
               </div>
 
               <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6">
@@ -290,7 +328,7 @@ export function SportStatsSlideshow({
         </div>
 
         <p className="mt-5 font-ui text-[11px] tracking-[0.14em] uppercase text-fg/60 max-w-2xl">
-          Tribute stats for motion design — focus this panel and use arrow keys, or use the controls.
+          Auto-advances about every 3 seconds — hover or focus pauses. Arrow keys step slides.
         </p>
       </div>
     </section>
