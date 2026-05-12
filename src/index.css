@@ -8,12 +8,15 @@
      --font-display → font-display
    ============================================================ */
 @theme {
-  /* Core palette */
-  --color-bg: #ff5a1f;
+  /* Core palette — initial paint matches hero (pitch green) before JS theming */
+  --color-bg: #0b3d22;
+  /** True black — borders, shadows, pills on accent, nav chrome */
   --color-ink: #0a0a0a;
+  /** Primary text on page bg */
+  --color-fg: #f2faf5;
   --color-paper: #ffffff;
-  --color-accent: #ffe51f;
-  --color-ghost: #ff7a3d;
+  --color-accent: #c8ff3d;
+  --color-ghost: #1f7a4d;
 
   /* Type families */
   --font-display: 'Archivo Black', system-ui, sans-serif;
@@ -37,7 +40,7 @@ body {
   max-width: 100%;
   overflow-x: hidden;
   background: var(--color-bg);
-  color: var(--color-ink);
+  color: var(--color-fg);
   font-family: var(--font-ui);
   scroll-behavior: smooth;
   font-synthesis: none;
@@ -65,21 +68,16 @@ body {
   color: var(--color-accent);
 }
 
-/* Neubrutalist scrollbar */
-::-webkit-scrollbar {
-  width: 14px;
+/* Hide vertical scrollbar — keep scroll behavior, no visible track or thumb */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / old Edge */
 }
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
-  border-left: 2px solid var(--color-ink);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-ink);
-  border: 3px solid var(--color-bg);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-  border-color: var(--color-ink);
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome, Safari, new Edge */
 }
 
 /* ============================================================
@@ -102,7 +100,7 @@ body {
 
   /* Section title — three sizes scoped per modifier */
   .section-title {
-    @apply font-display uppercase text-ink leading-[0.85] tracking-[-0.04em] m-0;
+    @apply font-display uppercase text-fg leading-[0.85] tracking-[-0.04em] m-0;
     font-size: clamp(60px, 11vw, 200px);
   }
   .section-title.huge {
@@ -120,20 +118,15 @@ body {
     margin-bottom: 22px;
   }
 
-  /* Ghost word backdrop — only used on hero */
+  /* Ghost word backdrop — only used on hero (center via wrapper so GSAP can own transform) */
   .ghost-word {
     @apply font-display uppercase select-none whitespace-nowrap;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     font-size: clamp(120px, 20vw, 380px);
     letter-spacing: -0.04em;
     line-height: 0.9;
     color: var(--color-ghost);
     -webkit-text-stroke: 3px var(--color-ink);
-    pointer-events: none;
-    z-index: 1;
+    will-change: transform, filter, opacity;
   }
 
   /* Logo cross-detail — pure CSS pseudo */
@@ -162,5 +155,61 @@ body {
   }
   .engrave-input:focus {
     background: var(--color-accent);
+  }
+
+  /* --------------------------------------------------------------
+     CSS scroll-driven parallax (Chrome 115+, Safari 26+).
+     Browsers without animation-timeline support get a static layout
+     — content is still readable, just no rise-in animation.
+     -------------------------------------------------------------- */
+
+  .parallax-card,
+  .parallax-header {
+    will-change: transform, opacity;
+  }
+
+  @supports (animation-timeline: view()) {
+    .parallax-card {
+      animation: rise-card linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+    .parallax-header {
+      animation: slide-header linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+  }
+
+  @keyframes rise-card {
+    from {
+      transform: translateY(64px) scale(0.97);
+      opacity: 0.2;
+    }
+    to {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-header {
+    from {
+      transform: translateX(-32px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* GSAP split titles — 3D lift needs a camera */
+  .perspective-title {
+    perspective: 1200px;
+    transform-style: preserve-3d;
+  }
+
+  .split-char-inner {
+    backface-visibility: hidden;
   }
 }

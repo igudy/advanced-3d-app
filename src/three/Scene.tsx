@@ -1,23 +1,36 @@
+import { Suspense, useEffect, useLayoutEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { AdaptiveDpr, AdaptiveEvents } from '@react-three/drei'
-import { Football } from './Football'
+import { AdaptiveDpr, AdaptiveEvents, Environment, useProgress } from '@react-three/drei'
+import { Ball3D } from './Ball3D'
+
+function ProgressBroadcast() {
+  const { progress, active } = useProgress()
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('scene-assets', {
+        detail: { progress, active },
+      }),
+    )
+  }, [progress, active])
+  return null
+}
 
 /**
- * Performance + reliability:
- *   - NO <Environment> HDRI: avoided to prevent Suspense flicker (HDR
- *     fetched from a CDN can suspend the canvas and unmount the football
- *     mid-flight). Lighting is fully explicit below.
- *   - DPR capped at 1.5 (Retina at 3.0 is fragment-shader expensive).
- *   - AdaptiveDpr drops resolution under sustained load and recovers.
- *   - AdaptiveEvents throttles raycasting on movement.
- *   - shadows OFF — neubrutalist is flat; shadows would conflict aesthetically.
- *   - Fixed full-viewport — the canvas stays put while sections scroll past.
+ * Stage for the three sport balls.
+ *  - Camera at z=5.0 so a ~1.6u ball fills ~45% of viewport.
+ *  - Inner <Suspense> for the HDRI; while it streams in, the ball still renders
+ *    with explicit lights so nothing pops in/out.
+ *  - Outer <Suspense> at the App boundary catches the FBX/OBJ + texture loads.
  */
 export function Scene() {
+  useLayoutEffect(() => {
+    window.dispatchEvent(new CustomEvent('scene-mounted'))
+  }, [])
+
   return (
     <Canvas
       className="scene-canvas"
-      camera={{ position: [0, 0, 3.8], fov: 35 }}
+      camera={{ position: [0, 0, 5.0], fov: 35 }}
       dpr={[1, 1.5]}
       gl={{
         antialias: true,
@@ -28,16 +41,19 @@ export function Scene() {
       }}
       shadows={false}
     >
-      <ambientLight intensity={0.5} color="#fff4d6" />
+      <ProgressBroadcast />
 
-      {/* Key — warm top-right */}
-      <directionalLight position={[5, 6, 4]} intensity={1.6} color="#fff0d6" />
-      {/* Fill — cool left */}
-      <directionalLight position={[-4, 1, 2]} intensity={0.6} color="#a5b8ff" />
-      {/* Rim — yellow back to pop against orange bg */}
-      <directionalLight position={[0, -2, -5]} intensity={0.9} color="#ffe51f" />
+      <ambientLight intensity={0.4} color="#fff6dc" />
+      <directionalLight position={[5, 6, 4]} intensity={1.5} color="#fff0d6" />
+      <directionalLight position={[-4, 2, 2]} intensity={0.6} color="#a5b8ff" />
+      <directionalLight position={[0, -3, -2]} intensity={0.5} color="#ffe51f" />
+      <hemisphereLight args={['#ffe5cc', '#0a0a0a', 0.3]} />
 
-      <Football />
+      <Suspense fallback={null}>
+        <Environment preset="studio" environmentIntensity={0.55} />
+      </Suspense>
+
+      <Ball3D />
 
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />

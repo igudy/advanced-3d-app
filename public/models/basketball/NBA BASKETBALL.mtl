@@ -1,0 +1,11 @@
+# Companion to basketball.obj — maps live in ./maps/ (web-safe PNG)
+newmtl Material__0
+	Ns 32.0000
+	Ni 1.5000
+	d 1.0000
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	map_Kd maps/nba-diffuse.png
+	map_bump maps/nba-bump.png
