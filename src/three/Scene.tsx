@@ -1,28 +1,46 @@
 import { Canvas } from '@react-three/fiber'
-import { Environment } from '@react-three/drei'
-import { Basketball } from './Basketball'
+import { AdaptiveDpr, AdaptiveEvents } from '@react-three/drei'
+import { Football } from './Football'
 
+/**
+ * Performance + reliability:
+ *   - NO <Environment> HDRI: avoided to prevent Suspense flicker (HDR
+ *     fetched from a CDN can suspend the canvas and unmount the football
+ *     mid-flight). Lighting is fully explicit below.
+ *   - DPR capped at 1.5 (Retina at 3.0 is fragment-shader expensive).
+ *   - AdaptiveDpr drops resolution under sustained load and recovers.
+ *   - AdaptiveEvents throttles raycasting on movement.
+ *   - shadows OFF — neubrutalist is flat; shadows would conflict aesthetically.
+ *   - Fixed full-viewport — the canvas stays put while sections scroll past.
+ */
 export function Scene() {
   return (
     <Canvas
-      className="canvas-wrap"
-      camera={{ position: [0, 0, 4.2], fov: 35 }}
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: true }}
+      className="scene-canvas"
+      camera={{ position: [0, 0, 3.8], fov: 35 }}
+      dpr={[1, 1.5]}
+      gl={{
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+        stencil: false,
+        depth: true,
+      }}
+      shadows={false}
     >
-      {/* Lighting per spec */}
-      <ambientLight intensity={0.15} />
-      <directionalLight
-        position={[3, 4, 5]}
-        intensity={1.2}
-        color="#fff0d6"
-      />
-      <directionalLight position={[-4, 1, 2]} intensity={0.4} color="#9fb4ff" />
-      <directionalLight position={[0, -3, -4]} intensity={0.6} color="#ffffff" />
+      <ambientLight intensity={0.5} color="#fff4d6" />
 
-      <Environment preset="studio" environmentIntensity={0.3} />
+      {/* Key — warm top-right */}
+      <directionalLight position={[5, 6, 4]} intensity={1.6} color="#fff0d6" />
+      {/* Fill — cool left */}
+      <directionalLight position={[-4, 1, 2]} intensity={0.6} color="#a5b8ff" />
+      {/* Rim — yellow back to pop against orange bg */}
+      <directionalLight position={[0, -2, -5]} intensity={0.9} color="#ffe51f" />
 
-      <Basketball />
+      <Football />
+
+      <AdaptiveDpr pixelated />
+      <AdaptiveEvents />
     </Canvas>
   )
 }
