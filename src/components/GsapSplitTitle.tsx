@@ -4,6 +4,17 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
+/** Coalesce many split-title mounts (e.g. React StrictMode) into one ST refresh. */
+let stRefreshQueued = false
+function scheduleScrollTriggerRefresh() {
+  if (stRefreshQueued) return
+  stRefreshQueued = true
+  requestAnimationFrame(() => {
+    stRefreshQueued = false
+    ScrollTrigger.refresh()
+  })
+}
+
 type GsapSplitTitleProps = {
   className?: string
   line1: string
@@ -50,30 +61,35 @@ export function GsapSplitTitle({
       return
     }
 
-    gsap.set(inners, {
-      yPercent: 118,
-      rotateX: -68,
-      opacity: 0,
-      transformOrigin: '50% 100%',
-    })
-
     const tl = gsap.timeline({
       defaults: { ease: 'power4.out' },
       scrollTrigger: {
         trigger: el,
-        start: 'top 88%',
-        end: 'top 40%',
-        scrub: 0.65,
+        start: 'top 92%',
+        end: 'top 28%',
+        scrub: 0.55,
+        invalidateOnRefresh: true,
       },
     })
 
-    tl.to(inners, {
-      yPercent: 0,
-      rotateX: 0,
-      opacity: 1,
-      stagger: { each: 0.012, from: 'start' },
-      duration: 1.05,
-    })
+    tl.fromTo(
+      inners,
+      {
+        yPercent: 118,
+        rotateX: -68,
+        opacity: 0,
+        transformOrigin: '50% 100%',
+      },
+      {
+        yPercent: 0,
+        rotateX: 0,
+        opacity: 1,
+        stagger: { each: 0.012, from: 'start' },
+        duration: 1.05,
+      },
+    )
+
+    scheduleScrollTriggerRefresh()
 
     const st = tl.scrollTrigger
     return () => {

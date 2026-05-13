@@ -3,6 +3,7 @@ import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import { useFBX, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { scroll } from '../hooks/scrollSignal'
+import { easeInOutCubic, sampleScrollPath } from '../lib/ballChoreography'
 import { pickFocalSurfaceKey } from '../lib/focalSurface'
 import { BasketballOBJLoader } from './BasketballOBJLoader'
 
@@ -19,103 +20,9 @@ import { BasketballOBJLoader } from './BasketballOBJLoader'
  * `#football-prelude` merges them back to the soccer-only state, then the
  * normal cross-fade resumes — no hard cuts.
  *
- * Position / spin still follow the Catmull–Rom scroll path; per-ball offsets
+ * Position / spin follow `sampleScrollPath(scroll.progress)`; per-ball offsets
  * are layered only during the Greats / merge window.
  */
-
-/* ------------------------------------------------------------------
-   Scroll choreography — one continuous story in screen space
-   ------------------------------------------------------------------
-   Rough beats vs scroll progress:
-     0.00–0.32  Football — enter from deep right, arc up‑field, hold high read
-     0.32–0.62  Basketball — dive to the paint, pocket under the rim, push up
-     0.62–0.92  Tennis — open stance left, topspin apex, cross‑court fade
-     0.92–1.00  Outro — fall to footer
-
-   Position uses a centripetal Catmull–Rom curve (smooth, no hard zig‑zags).
-   Rotation / scale still key off the same milestones for readable silhouettes.
-   ------------------------------------------------------------------ */
-
-type Waypoint = {
-  pos: [number, number, number]
-  rot: [number, number, number]
-  scale: number
-}
-
-type ScrollKey = { t: number } & Waypoint
-
-const SCROLL_KEYS: ScrollKey[] = [
-  /* Hero — ball starts centered, then carries into the football arc */
-  { t: 0.0, pos: [0.0, 0.0, 0.06], rot: [0.12, 0.35, -0.04], scale: 1.0 },
-  { t: 0.1, pos: [0.32, 0.08, 0.18], rot: [0.16, 0.95, -0.07], scale: 0.99 },
-  /* Football chapter — long carry toward upper field, slight drift toward camera */
-  { t: 0.22, pos: [0.02, 0.22, 0.34], rot: [0.22, 2.05, 0.02], scale: 0.98 },
-  { t: 0.32, pos: [-0.32, 0.16, 0.28], rot: [0.2, 2.95, 0.06], scale: 0.96 },
-  /* Handoff — settle center‑high before the hardwood drop */
-  { t: 0.38, pos: [0.06, 0.12, 0.18], rot: [0.24, 3.55, -0.04], scale: 0.95 },
-  /* Basketball — drive baseline right, sink into the paint */
-  { t: 0.5, pos: [0.46, -0.2, 0.12], rot: [0.28, 4.45, 0.08], scale: 0.93 },
-  { t: 0.58, pos: [0.08, -0.34, 0.04], rot: [0.22, 5.35, -0.05], scale: 0.91 },
-  /* Tennis — open on the ad side, lob apex, then cut across */
-  { t: 0.68, pos: [-0.4, 0.02, -0.06], rot: [0.2, 6.35, 0.09], scale: 0.89 },
-  { t: 0.78, pos: [0.28, 0.2, -0.12], rot: [0.16, 7.25, -0.04], scale: 0.87 },
-  { t: 0.88, pos: [-0.12, -0.38, 0.02], rot: [0.18, 8.35, 0.03], scale: 0.85 },
-  /* Footer — rest on the baseline */
-  { t: 1.0, pos: [0.0, -1.12, 0.0], rot: [0.12, 9.25, 0.0], scale: 0.84 },
-]
-
-const POSITION_CURVE = new THREE.CatmullRomCurve3(
-  SCROLL_KEYS.map((k) => new THREE.Vector3(k.pos[0], k.pos[1], k.pos[2])),
-  false,
-  'centripetal',
-  0.42,
-)
-
-function easeInOutCubic(local: number): number {
-  return local < 0.5
-    ? 4 * local * local * local
-    : 1 - Math.pow(-2 * local + 2, 3) / 2
-}
-
-function sampleRotScale(t: number): Pick<Waypoint, 'rot' | 'scale'> {
-  const keys = SCROLL_KEYS
-  if (t <= keys[0].t) {
-    return { rot: keys[0].rot, scale: keys[0].scale }
-  }
-  const last = keys[keys.length - 1]
-  if (t >= last.t) {
-    return { rot: last.rot, scale: last.scale }
-  }
-  for (let i = 0; i < keys.length - 1; i++) {
-    const a = keys[i]
-    const b = keys[i + 1]
-    if (t >= a.t && t <= b.t) {
-      const span = b.t - a.t
-      const u = span > 0 ? (t - a.t) / span : 0
-      const e = easeInOutCubic(u)
-      return {
-        rot: [
-          a.rot[0] + (b.rot[0] - a.rot[0]) * e,
-          a.rot[1] + (b.rot[1] - a.rot[1]) * e,
-          a.rot[2] + (b.rot[2] - a.rot[2]) * e,
-        ],
-        scale: a.scale + (b.scale - a.scale) * e,
-      }
-    }
-  }
-  return { rot: last.rot, scale: last.scale }
-}
-
-function sample(t: number): Waypoint {
-  const u = Math.min(1, Math.max(0, t))
-  const p = POSITION_CURVE.getPoint(u)
-  const { rot, scale } = sampleRotScale(u)
-  return {
-    pos: [p.x, p.y, p.z],
-    rot,
-    scale,
-  }
-}
 
 /* ------------------------------------------------------------------
    Cross-fade curves
@@ -416,7 +323,7 @@ export function Ball3D() {
     if (!group.current) return
 
     const p = scroll.progress
-    const wp = sample(p)
+    const wp = sampleScrollPath(p)
 
     const { triple: tripleTarget, merge: mergeTarget } = readGreatsScrollState()
     tripleSm.current = damp(tripleSm.current, tripleTarget, 11, delta)

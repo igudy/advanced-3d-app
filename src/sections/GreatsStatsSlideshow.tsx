@@ -163,7 +163,7 @@ export function SportStatsSlideshow({
       role="region"
       aria-roledescription="carousel"
       aria-label={`${surface} legends — stats slideshow`}
-      className="relative w-full min-h-[min(88vh,760px)] bg-bg px-5.5 sm:px-9 lg:px-16 py-16 sm:py-22 overflow-hidden scroll-mt-24 outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg pointer-events-auto"
+      className="relative w-full min-h-[min(88vh,760px)] bg-transparent px-5.5 sm:px-9 lg:px-16 py-16 sm:py-22 overflow-hidden scroll-mt-24 outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-paper pointer-events-auto"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -188,12 +188,14 @@ export function SportStatsSlideshow({
           </div>
         </div>
 
-        <div className="eyebrow mb-5">{eyebrow}</div>
-        <h2 className="section-title !text-[clamp(36px,7.5vw,110px)] mb-8 max-w-4xl">
-          {titleLine1}
-          <br />
-          {titleLine2}
-        </h2>
+        <div className="mb-8 max-w-4xl">
+          <div className="eyebrow mb-5">{eyebrow}</div>
+          <h2 className="section-title !text-[clamp(36px,7.5vw,110px)] mb-8 max-w-4xl">
+            {titleLine1}
+            <br />
+            {titleLine2}
+          </h2>
+        </div>
 
         <div className="relative border-4 border-ink bg-ink/10 shadow-brutal-lg backdrop-blur-[2px]">
           <div

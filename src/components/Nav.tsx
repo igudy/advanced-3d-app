@@ -54,7 +54,7 @@ export function Nav() {
           {night ? 'Day' : 'Night'}
         </button>
         <a
-          href="#legends"
+          href="#the-greats"
           className="brutal-lift bg-accent text-ink font-display text-[11px] sm:text-xs tracking-[0.16em] uppercase border-[3px] border-ink shadow-brutal-sm hover:shadow-brutal-md px-3 sm:px-4 h-9.5 sm:h-10.5 flex items-center justify-center pointer-events-auto"
         >
           Hall of Fame ↓

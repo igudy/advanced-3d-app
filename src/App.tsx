@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Frame } from './components/Frame'
 import { Nav } from './components/Nav'
+import { AmbientSportSound } from './components/AmbientSportSound'
 import { Hero } from './sections/Hero'
 import { TheGreatsIntro } from './sections/TheGreatsIntro'
 import { SportGreats } from './sections/Greats'
@@ -24,6 +25,28 @@ const Scene = lazy(() => import('./three/Scene').then((m) => ({ default: m.Scene
 
 function App() {
   useEffect(() => initScroll(), [])
+
+  /** Split titles + other ST triggers measure before fonts / lazy layout settle. */
+  useEffect(() => {
+    const refresh = () => {
+      requestAnimationFrame(() => ScrollTrigger.refresh())
+    }
+    refresh()
+    void document.fonts?.ready?.then(refresh)
+    window.addEventListener('load', refresh)
+    let resizeTimer = 0
+    const onResize = () => {
+      window.clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(refresh, 120)
+    }
+    window.addEventListener('resize', onResize, { passive: true })
+    return () => {
+      window.removeEventListener('load', refresh)
+      window.removeEventListener('resize', onResize)
+      window.clearTimeout(resizeTimer)
+    }
+  }, [])
+
   useSportSurface()
 
   const [sceneGlReady, setSceneGlReady] = useState(false)
@@ -70,28 +93,42 @@ function App() {
 
   return (
     <ThemeProvider>
-    <div className="relative w-full max-w-full overflow-x-hidden bg-bg min-h-screen">
+    <div className="relative w-full max-w-full overflow-x-hidden min-h-screen">
       <LoadingCurtain show={showLoader} progress={assets.progress} />
 
       <Frame />
       <Nav />
+      <AmbientSportSound />
+
+      <div className="field-backdrop" aria-hidden />
 
       <Suspense fallback={<div className="scene-fallback" aria-hidden />}>
         <Scene />
       </Suspense>
 
-      <main className="relative z-10 w-full max-w-full overflow-x-hidden">
+      <main className="relative z-2 w-full max-w-full overflow-x-hidden bg-transparent">
         <Hero />
-
-        <TheGreatsIntro />
 
         <SportBridge
           id="football-prelude"
           surface="football"
           eyebrow="Pitch · prelude"
           title={['GRASS', 'STITCHES.']}
-          body="The first sport where a nation paints its heart on a rectangle of green. Eleven versus eleven — geometry, improvisation, and a ball that bends time when it finds the right boot."
-          sub="Scroll keeps the ball alive while the canvas shifts from pitch green to hardwood orange, then electric blue."
+          body={
+            <>
+              <span className="block">Where a nation paints its heart on a stitch of green —</span>
+              <span className="block">eleven on eleven, mud on the boots, geometry learning to breathe.</span>
+              <span className="block mt-1 italic text-fg/90">
+                A ball that forgets the clock when the right foot tells it where to bend.
+              </span>
+            </>
+          }
+          sub={
+            <>
+              <span className="block">Scroll keeps the story turning —</span>
+              <span className="block">pitch to varnish, green to ember, cobalt when the night comes down.</span>
+            </>
+          }
         />
 
         <SportGreats config={FOOTBALL} />
@@ -111,7 +148,16 @@ function App() {
           surface="football"
           eyebrow="Echo · terraces"
           title={['ANTHEMS', 'IN RAIN.']}
-          body="From concrete cages to floodlit cathedrals: the same leather song, just louder. The ball remembers every touchline sprint — it is the only witness that never blinks."
+          body={
+            <>
+              <span className="block">Concrete cages, floodlit cathedrals —</span>
+              <span className="block">the same leather hymn, only louder in the throat.</span>
+              <span className="block mt-1 italic text-fg/90">
+                The ball remembers every sprint along the whitewash; the only witness that never blinks.
+              </span>
+            </>
+          }
+          align="right"
         />
 
         <SportBridge
@@ -119,8 +165,20 @@ function App() {
           surface="basketball"
           eyebrow="Arena · varnish"
           title={['RIMS', 'ON FIRE.']}
-          body="Ninety-four feet of maple where giants invent hang time. The rock talks through every palm — a metronome of squeaks, screens, and fourth-quarter breath held in the rafters."
-          sub="The canvas warms to ember court tones while the ball trades grass for varnish."
+          body={
+            <>
+              <span className="block">Ninety-four feet of maple where giants rehearse flight.</span>
+              <span className="block">The rock speaks in squeaks, screens, breath — a metronome hung in the rafters.</span>
+              <span className="block mt-1 italic text-fg/90">Fourth quarter: the air learns your pulse.</span>
+            </>
+          }
+          sub={
+            <>
+              <span className="block">Ember underfoot — grass gives way to varnish;</span>
+              <span className="block">the room warms from the floorboards up.</span>
+            </>
+          }
+          align="center"
         />
 
         <SportGreats config={BASKETBALL} />
@@ -140,7 +198,15 @@ function App() {
           surface="basketball"
           eyebrow="Overtime · chorus"
           title={['SHOT', 'CLOCK POETRY.']}
-          body="Rhythm is the cheat code: between-the-legs, step-back, glass. The ball floats like it owes gravity an apology — then drops through the net like a verdict."
+          body={
+            <>
+              <span className="block">Rhythm is the quiet cheat code:</span>
+              <span className="block">between-the-legs, step-back, a kiss off the glass.</span>
+              <span className="block mt-1 italic text-fg/90">
+                The ball hangs like it owes gravity an apology — then drops through the net like a verdict.
+              </span>
+            </>
+          }
         />
 
         <SportBridge
@@ -148,8 +214,22 @@ function App() {
           surface="tennis"
           eyebrow="Court · cobalt"
           title={['SILENCE,', 'THEN THUNDER.']}
-          body="A yellow sun on a blue ocean — serve, return, slide, scream. Tennis is the only sport where politeness and violence share the same handshake at the net."
-          sub="The atmosphere cools into electric cobalt while the fuzzy sphere learns to sing topspin."
+          body={
+            <>
+              <span className="block">A yellow sun on a blue sheet of water —</span>
+              <span className="block">serve, slide, return, the crowd learning how to roar.</span>
+              <span className="block mt-1 italic text-fg/90">
+                Politeness and violence share the same handshake at the net.
+              </span>
+            </>
+          }
+          sub={
+            <>
+              <span className="block">Cobalt gathers; the fuzzy moon begins</span>
+              <span className="block">to sing in topspin.</span>
+            </>
+          }
+          align="center"
         />
 
         <SportGreats config={TENNIS} />
@@ -169,8 +249,18 @@ function App() {
           surface="tennis"
           eyebrow="Match · electricity"
           title={['LINES', 'LIKE LASERS.']}
-          body="Championship point is a full stop written in sweat. The ball compresses against carbon, paints the chalk, and dares the crowd to forget how to sit still."
+          body={
+            <>
+              <span className="block">Championship point is punctuation —</span>
+              <span className="block">a full stop written in salt and chalk.</span>
+              <span className="block mt-1 italic text-fg/90">
+                The ball compresses against carbon, paints the line, dares the stands to forget how to sit still.
+              </span>
+            </>
+          }
         />
+
+        <TheGreatsIntro />
 
         <CTASection />
       </main>

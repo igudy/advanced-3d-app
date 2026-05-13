@@ -63,6 +63,15 @@
   }
 }
 
+/* Solid chapter field — under the WebGL canvas so the ball reads above flat color. */
+.field-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--color-bg);
+  pointer-events: none;
+}
+
 /* R3F's <Canvas> sets inline styles — override with class. */
 .scene-canvas {
   position: fixed !important;
@@ -70,8 +79,8 @@
   left: 0;
   width: 100% !important;
   height: 100vh !important;
-  /* Below <main> so sections paint over the balls (Hero / Greats stay transparent where needed). */
-  z-index: 2;
+  /* Above .field-backdrop, below <main> (z-[2]) so only copy / media panels cover the ball. */
+  z-index: 1;
   /* Hero uses pointer-events: none so drags in open sky hit the ball */
   pointer-events: auto;
   touch-action: pan-y;
@@ -80,7 +89,7 @@
 .scene-fallback {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
   pointer-events: none;
 }
 

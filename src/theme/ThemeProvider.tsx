@@ -27,8 +27,10 @@ export function useTheme(): ThemeContextValue {
 }
 
 function readStoredNight(): boolean {
-  if (typeof window === 'undefined') return false
-  return window.localStorage.getItem(STORAGE_KEY) === '1'
+  if (typeof window === 'undefined') return true
+  const raw = window.localStorage.getItem(STORAGE_KEY)
+  if (raw === '0') return false
+  return true
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
