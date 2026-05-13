@@ -93,12 +93,26 @@ function CardBody({ g, i, dark }: { g: Great; i: number; dark: boolean }) {
   }
 }
 
+function TrophyCopy({ config }: { config: SportConfig }) {
+  return (
+    <div className="flex flex-col justify-center min-w-0 text-center md:text-left">
+      <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-fg/50 mb-2">The hardware</p>
+      <h3 className="font-display text-xl sm:text-2xl uppercase tracking-tight text-fg leading-[1.05] border-b-4 border-ink pb-2 inline-block self-center md:self-start">
+        {config.trophy.label}
+      </h3>
+      <p className="font-ui text-sm text-fg/75 mt-4 max-w-md mx-auto md:mx-0 leading-relaxed">
+        The piece of metal the whole myth bends toward — same chase, different pitch.
+      </p>
+    </div>
+  )
+}
+
 export function SportGreats({ config }: { config: SportConfig }) {
   return (
     <section
       id={config.id}
       data-surface={config.id}
-      className="relative w-full min-h-screen px-5.5 sm:px-9 lg:px-16 pt-26 sm:pt-28 lg:pt-32 pb-14 sm:pb-16 overflow-hidden scroll-mt-24 pointer-events-auto"
+      className="relative w-full min-h-screen bg-bg px-5.5 sm:px-9 lg:px-16 pt-26 sm:pt-28 lg:pt-32 pb-14 sm:pb-16 overflow-x-hidden scroll-mt-24 pointer-events-auto"
     >
       <div className="max-w-7xl mx-auto w-full">
         <div className="parallax-header flex flex-col">
@@ -116,29 +130,19 @@ export function SportGreats({ config }: { config: SportConfig }) {
         </div>
 
         <div className="mb-10 sm:mb-12 flex flex-col md:flex-row items-stretch gap-6 md:gap-10 max-w-3xl lg:max-w-5xl lg:mx-0">
-          <div className="relative shrink-0 mx-auto md:mx-0 w-full max-w-[200px] sm:max-w-[240px] aspect-square border-4 border-ink bg-linear-to-br from-amber-50 via-paper to-amber-100 p-3 sm:p-4 shadow-brutal-lg">
+          <div className="relative shrink-0 mx-auto md:mx-0 w-full max-w-[200px] sm:max-w-[240px] aspect-square border-4 border-ink bg-ink overflow-hidden shadow-brutal-lg">
             <img
               src={config.trophy.image}
               alt={config.trophy.alt}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-contain drop-shadow-lg"
+              className="absolute inset-0 h-full w-full object-cover contrast-[1.06] saturate-[1.05]"
               onError={(e) => {
                 ;(e.currentTarget as HTMLImageElement).style.opacity = '0.2'
               }}
             />
           </div>
-          <div className="flex flex-col justify-center min-w-0 text-center md:text-left">
-            <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-fg/50 mb-2">
-              The hardware
-            </p>
-            <h3 className="font-display text-xl sm:text-2xl uppercase tracking-tight text-fg leading-[1.05] border-b-4 border-ink pb-2 inline-block self-center md:self-start">
-              {config.trophy.label}
-            </h3>
-            <p className="font-ui text-sm text-fg/75 mt-4 max-w-md mx-auto md:mx-0 leading-relaxed">
-              The piece of metal the whole myth bends toward — same chase, different pitch.
-            </p>
-          </div>
+          <TrophyCopy config={config} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">

@@ -1,6 +1,16 @@
 /**
- * Wikipedia infobox portraits (upload.wikimedia.org) — real likenesses per athlete page.
+ * Bundled images under `src/assets/` (trophies + Messi/Ronaldo).
+ * Other greats use Commons `Special:FilePath` (see `commonsImage`).
  */
+
+import { commonsImage } from '../lib/commonsImage'
+
+/** World Cup photo lives with other chapter art under `images/`. */
+const FOOTBALL_CUP = new URL('../assets/images/worldcup.jpg', import.meta.url).href
+const FOOTBALL_MESSI = new URL('../assets/images/messi picture.png', import.meta.url).href
+const FOOTBALL_RONALDO = new URL('../assets/images/ronaldo.png', import.meta.url).href
+const BASKETBALL_TROPHY = new URL('../assets/images/larry o brian trophy.png', import.meta.url).href
+const TENNIS_TROPHY = new URL('../assets/images/wimbledon.png', import.meta.url).href
 
 export type Great = {
   name: string
@@ -24,7 +34,7 @@ export type SportConfig = {
   eyebrowLabel: string
   title: { line1: string; line2: string }
   lede: string
-  /** Signature hardware for this chapter (Wikimedia photo). */
+  /** Signature hardware for this chapter (local PNG or Wikimedia). */
   trophy: SportTrophy
   greats: Great[]
 }
@@ -38,8 +48,7 @@ export const FOOTBALL: SportConfig = {
   trophy: {
     label: 'FIFA World Cup',
     alt: 'FIFA World Cup trophy',
-    image:
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/FIFA_World_Cup_Trophy_%28cropped%29.jpg/800px-FIFA_World_Cup_Trophy_%28cropped%29.jpg',
+    image: FOOTBALL_CUP,
   },
   greats: [
     {
@@ -48,8 +57,7 @@ export const FOOTBALL: SportConfig = {
       country: 'Argentina',
       honor: '8 Ballons d’Or · WC ’22',
       number: '10',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/6/6b/Lionel_Messi_White_House_2026_%283x4_cropped%29.jpg',
+      image: FOOTBALL_MESSI,
     },
     {
       name: 'Ronaldo',
@@ -57,8 +65,7 @@ export const FOOTBALL: SportConfig = {
       country: 'Portugal',
       honor: '900+ career goals',
       number: '7',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/9/9c/President_Donald_Trump_meets_with_Cristiano_Ronaldo_in_the_Oval_Office_%2854933344262%29_%28cropped_and_rotated%29.jpg',
+      image: FOOTBALL_RONALDO,
     },
     {
       name: 'Pelé',
@@ -66,8 +73,7 @@ export const FOOTBALL: SportConfig = {
       country: 'Brazil',
       honor: '1281 goals · 3 World Cups',
       number: '10',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg',
+      image: commonsImage('Pele_con_brasil_(cropped).jpg'),
     },
     {
       name: 'Maradona',
@@ -75,8 +81,7 @@ export const FOOTBALL: SportConfig = {
       country: 'Argentina',
       honor: 'Hand of God · ’86 lone savior',
       number: '10',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Maradona_1986_vs_italy.jpg/500px-Maradona_1986_vs_italy.jpg',
+      image: commonsImage('Maradona_1986_vs_italy.jpg'),
     },
   ],
 }
@@ -90,8 +95,7 @@ export const BASKETBALL: SportConfig = {
   trophy: {
     label: 'Larry O’Brien trophy',
     alt: 'NBA Larry O’Brien Championship Trophy',
-    image:
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Larry_O%27Brien_NBA_Championship_Trophy.jpg/800px-Larry_O%27Brien_NBA_Championship_Trophy.jpg',
+    image: BASKETBALL_TROPHY,
   },
   greats: [
     {
@@ -100,7 +104,7 @@ export const BASKETBALL: SportConfig = {
       country: 'USA · Bulls',
       honor: '6× champion · 6× Finals MVP',
       number: '23',
-      image: 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Michael_Jordan_in_2014.jpg',
+      image: commonsImage('Michael_Jordan_in_2014.jpg'),
     },
     {
       name: 'LeBron',
@@ -108,8 +112,7 @@ export const BASKETBALL: SportConfig = {
       country: 'USA · Lakers',
       honor: '40,000+ points · 4× MVP',
       number: '23',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/7/7a/LeBron_James_%2851959977144%29_%28cropped2%29.jpg',
+      image: commonsImage('LeBron_James_(51959977144)_(cropped2).jpg'),
     },
     {
       name: 'Kobe',
@@ -117,7 +120,7 @@ export const BASKETBALL: SportConfig = {
       country: 'USA · Lakers',
       honor: '81-point night · 5 rings',
       number: '24',
-      image: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Kobe_Bryant_Dec_2014.jpg',
+      image: commonsImage('Kobe_Bryant_Dec_2014.jpg'),
     },
     {
       name: 'Kareem',
@@ -125,8 +128,7 @@ export const BASKETBALL: SportConfig = {
       country: 'USA · Lakers',
       honor: '6× MVP · sky hook never blocked',
       number: '33',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/a/a0/Kareem_Abdul-Jabbar_May_2014.jpg',
+      image: commonsImage('Kareem_Abdul-Jabbar_May_2014.jpg'),
     },
   ],
 }
@@ -140,8 +142,7 @@ export const TENNIS: SportConfig = {
   trophy: {
     label: 'Wimbledon · Gentlemen’s singles',
     alt: 'Wimbledon Championships gentlemen’s singles trophy',
-    image:
-      'https://upload.wikimedia.org/wikipedia/commons/1/1a/Gentlemen%27s_Singles_Trophy_Wimbledon_2023.jpg',
+    image: TENNIS_TROPHY,
   },
   greats: [
     {
@@ -149,31 +150,30 @@ export const TENNIS: SportConfig = {
       nick: 'Maestro',
       country: 'Switzerland',
       honor: '20 Grand Slams · 310 weeks #1',
-      image: 'https://upload.wikimedia.org/wikipedia/commons/1/11/Roger_Federer_2015_%28cropped%29.jpg',
+      image: commonsImage('Roger_Federer_2015_(cropped).jpg'),
     },
     {
       name: 'Nadal',
       nick: 'King of Clay',
       country: 'Spain',
       honor: '14 French Opens · 22 Slams',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/7/71/Rafael_Nadal_en_2024_%28cropped%29.jpg',
+      image: commonsImage('Rafael_Nadal_en_2024_(cropped).jpg'),
     },
     {
       name: 'Djokovic',
       nick: 'Djoker',
       country: 'Serbia',
       honor: '24 Grand Slams · most ever',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/d/d7/Novak_Djokovic_2024_Paris_Olympics.jpg',
+      image: commonsImage('Novak_Djokovic_2024_Paris_Olympics.jpg'),
     },
     {
       name: 'Serena',
       nick: 'Queen of Tennis',
       country: 'USA',
       honor: '23 Slams · open era GOAT',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/d/d3/Serena_Williams_at_the_2025_International_Tennis_Hall_of_Fame_Induction_Ceremony_Press_Conference_%28cropped%29.jpg',
+      image: commonsImage(
+        'Serena_Williams_at_the_2025_International_Tennis_Hall_of_Fame_Induction_Ceremony_Press_Conference_(cropped).jpg',
+      ),
     },
   ],
 }

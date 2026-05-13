@@ -70,6 +70,7 @@
   left: 0;
   width: 100% !important;
   height: 100vh !important;
+  /* Below <main> so sections paint over the balls (Hero / Greats stay transparent where needed). */
   z-index: 2;
   /* Hero uses pointer-events: none so drags in open sky hit the ball */
   pointer-events: auto;

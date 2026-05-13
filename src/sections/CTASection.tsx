@@ -5,7 +5,7 @@ export function CTASection() {
     <section
       id="legends"
       data-surface="outro"
-      className="relative w-full min-h-[80vh] px-5.5 sm:px-9 lg:px-16 pt-26 sm:pt-28 lg:pt-32 pb-24 flex items-center justify-center text-center overflow-hidden scroll-mt-24 pointer-events-auto"
+      className="relative w-full min-h-[80vh] bg-bg px-5.5 sm:px-9 lg:px-16 pt-26 sm:pt-28 lg:pt-32 pb-24 flex items-center justify-center text-center overflow-hidden scroll-mt-24 pointer-events-auto"
     >
       <div className="parallax-header flex flex-col items-center text-center gap-2 w-full max-w-full">
         <div className="eyebrow">10 / Legends</div>

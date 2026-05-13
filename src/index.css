@@ -133,6 +133,71 @@ body::-webkit-scrollbar {
     will-change: transform, filter, opacity;
   }
 
+  /* Hall of names — ~6 large cards / viewport, photo fills card body, CSS marquees */
+  @keyframes hall-marquee-left {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes hall-marquee-right {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  .hall-marquee {
+    --hall-gap: 0.65rem;
+    gap: var(--hall-gap);
+    animation: hall-marquee-left 132s linear infinite;
+    will-change: transform;
+  }
+  .hall-marquee--reverse {
+    animation: hall-marquee-right 152s linear infinite;
+  }
+  .hall-card {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: calc((100vw - 5 * var(--hall-gap, 0.65rem)) / 6);
+    min-width: 9.75rem;
+    max-width: 15.75rem;
+    height: clamp(15.5rem, 36vh, 24rem);
+    border: 3px solid var(--color-ink);
+    /* Transparent in the photo band so the fixed 3D ball reads through the image. */
+    background: transparent;
+    box-shadow: var(--shadow-brutal-sm);
+    overflow: hidden;
+  }
+  .hall-card__media {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+    border-bottom: 3px solid var(--color-ink);
+    background: transparent;
+  }
+  .hall-card__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.78;
+  }
+  .hall-card__meta {
+    flex-shrink: 0;
+    padding: 0.55rem 0.65rem 0.65rem;
+    background: var(--color-paper);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hall-marquee,
+    .hall-marquee--reverse {
+      animation: none;
+      transform: translateX(-18%);
+    }
+  }
+
   /* Logo cross-detail — pure CSS pseudo */
   .logo-mark {
     @apply w-[26px] h-[26px] rounded-full bg-accent border-2 border-paper relative shrink-0;

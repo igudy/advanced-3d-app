@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
-import { useFBX, useTexture } from '@react-three/drei'
+import { useFBX, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { scroll } from '../hooks/scrollSignal'
+import { pickFocalSurfaceKey } from '../lib/focalSurface'
 import { BasketballOBJLoader } from './BasketballOBJLoader'
-import { createTennisTextures } from './proceduralBallTextures'
 
 /**
  * Seamless sport ball morph.
@@ -136,6 +136,27 @@ function tennisOpacity(p: number): number {
   return smoothstep(0.58, 0.66, p)
 }
 
+/**
+ * Global `scroll.progress` is document fraction — it often runs ahead of the
+ * visible narrative band. Cross-fade opacities follow the focal surface so we
+ * do not flash basketball/tennis behind soccer after the Greats triple merges.
+ */
+function morphProgressForBallOpacity(p: number, surfaceKey: string | null): number {
+  switch (surfaceKey) {
+    case 'hero':
+    case 'football':
+      return Math.min(p, 0.31)
+    case 'basketball':
+      return Math.min(Math.max(p, 0.28), 0.68)
+    case 'tennis':
+      return Math.max(p, 0.58)
+    case 'stats':
+    case 'outro':
+    default:
+      return p
+  }
+}
+
 /** Focal line vs #the-greats + #football-prelude — triple showcase + merge to soccer. */
 function readGreatsScrollState(): { triple: number; merge: number } {
   const greatsEl = document.getElementById('the-greats')
@@ -259,40 +280,72 @@ function useBasketball() {
   }, [obj])
 }
 
-function useTennis() {
-  const { gl } = useThree()
-  const { map, roughnessMap, bumpMap } = useMemo(() => createTennisTextures(), [])
+function cloneTex(t: THREE.Texture): THREE.Texture {
+  const c = t.clone()
+  c.needsUpdate = true
+  return c
+}
 
-  useLayoutEffect(() => {
-    const max = gl.capabilities.getMaxAnisotropy?.() ?? 8
-    for (const t of [map, roughnessMap, bumpMap]) {
-      t.anisotropy = max
-      t.needsUpdate = true
+/**
+ * GLTF tennis (Sketchfab) — clone maps per mesh like soccer/basketball so
+ * disposals / cross-fades never share loader-owned textures.
+ */
+function buildTennisFromGltf(scene: THREE.Object3D) {
+  const model = scene.clone(true)
+  model.traverse((child) => {
+    const mesh = child as THREE.Mesh
+    if (!mesh.isMesh) return
+    const raw = mesh.material
+    const list = Array.isArray(raw) ? raw : [raw]
+    const next: THREE.Material[] = []
+    for (const m of list) {
+      if (!m) continue
+      const std = m as THREE.MeshStandardMaterial
+      if (!std.isMeshStandardMaterial && !(m as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) {
+        next.push(m as THREE.Material)
+        continue
+      }
+      const mat = m as THREE.MeshStandardMaterial
+      const nm = mat.clone()
+      if (nm.map) {
+        nm.map = cloneTex(nm.map)
+        nm.map.colorSpace = THREE.SRGBColorSpace
+        nm.map.anisotropy = 8
+      }
+      if (nm.normalMap) {
+        nm.normalMap = cloneTex(nm.normalMap)
+        nm.normalMap.colorSpace = THREE.NoColorSpace
+        nm.normalMap.anisotropy = 8
+      }
+      const orm = nm.metalnessMap ?? nm.roughnessMap
+      if (orm) {
+        const t = cloneTex(orm)
+        t.colorSpace = THREE.NoColorSpace
+        t.anisotropy = 8
+        nm.metalnessMap = t
+        nm.roughnessMap = t
+      }
+      if (nm.aoMap) {
+        nm.aoMap = cloneTex(nm.aoMap)
+        nm.aoMap.colorSpace = THREE.NoColorSpace
+        nm.aoMap.anisotropy = 8
+      }
+      nm.metalness = Math.min(1, nm.metalness)
+      nm.roughness = Math.min(1, Math.max(0, nm.roughness))
+      nm.envMapIntensity = 0.48
+      nm.transparent = true
+      nm.depthWrite = true
+      next.push(nm)
     }
-  }, [gl, map, roughnessMap, bumpMap])
+    mesh.material = next.length === 1 ? next[0]! : next
+  })
+  normalize(model, 1.46)
+  return model
+}
 
-  return useMemo(() => {
-    const geo = new THREE.SphereGeometry(1, 112, 112)
-    const mat = new THREE.MeshPhysicalMaterial({
-      map,
-      roughnessMap,
-      bumpMap,
-      bumpScale: 0.018,
-      color: '#ffffff',
-      roughness: 1,
-      metalness: 0,
-      sheen: 0,
-      clearcoat: 0,
-      /** ACES tone mapping pulls bright optic yellow toward flat grey-white. */
-      toneMapped: false,
-      envMapIntensity: 0.28,
-    })
-    const mesh = new THREE.Mesh(geo, mat)
-    const model = new THREE.Group()
-    model.add(mesh)
-    normalize(model, 1.46)
-    return model
-  }, [map, roughnessMap, bumpMap])
+function useTennis() {
+  const gltf = useGLTF('/models/tennis_ball/scene.gltf')
+  return useMemo(() => buildTennisFromGltf(gltf.scene), [gltf.scene])
 }
 
 /* ------------------------------------------------------------------
@@ -371,14 +424,19 @@ export function Ball3D() {
     const triple = tripleSm.current
     const merge = mergeSm.current
     const mergeE = easeInOutCubic(merge)
-    const spread = triple * (1 - mergeE)
+    let spread = triple * (1 - mergeE)
+    /** Kill damped tail once merge intent is done — avoids one-frame ghost stack */
+    if (mergeTarget > 0.97 && spread < 0.05) spread = 0
+
+    const surfaceKey = pickFocalSurfaceKey()
+    const pOpacity = morphProgressForBallOpacity(p, surfaceKey)
 
     const halfW = (viewport.width / 2) * 0.85
     const halfH = (viewport.height / 2) * 0.85
     const zScale = halfW * 0.55
 
     /** Sit the triple cluster over the left “visual” column on the Greats screen */
-    const tripleBiasX = -spread * halfW * 0.34 * Math.min(1, viewport.width / 9)
+    const tripleBiasX = -spread * halfW * 0.05 * Math.min(1, viewport.width / 9)
     tmp.set(wp.pos[0] * halfW + tripleBiasX, wp.pos[1] * halfH, wp.pos[2] * zScale)
     group.current.position.lerp(tmp, 0.14)
     group.current.position.y += Math.sin(state.clock.elapsedTime * 1.25) * 0.025 * (1 - spread * 0.55)
@@ -402,9 +460,9 @@ export function Ball3D() {
     const s = wp.scale * fit * triplePack
     group.current.scale.setScalar(s)
 
-    const baseSoc = soccerOpacity(p)
-    const baseBas = basketOpacity(p)
-    const baseTen = tennisOpacity(p)
+    const baseSoc = soccerOpacity(pOpacity)
+    const baseBas = basketOpacity(pOpacity)
+    const baseTen = tennisOpacity(pOpacity)
     const showAll = spread
     const oSoc = baseSoc + (1 - baseSoc) * showAll
     const oBas = baseBas + (1 - baseBas) * showAll
@@ -494,3 +552,4 @@ useFBX.preload('/models/soccer_ball/football.fbx')
 useTexture.preload('/models/soccer_ball/textures/football_ball_BaseColor.png')
 useTexture.preload('/models/soccer_ball/textures/football_ball_Normal.png')
 useTexture.preload('/models/soccer_ball/textures/football_ball_Roughness.png')
+useGLTF.preload('/models/tennis_ball/scene.gltf')

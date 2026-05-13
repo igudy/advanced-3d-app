@@ -163,7 +163,7 @@ export function SportStatsSlideshow({
       role="region"
       aria-roledescription="carousel"
       aria-label={`${surface} legends — stats slideshow`}
-      className="relative w-full min-h-[min(88vh,760px)] px-5.5 sm:px-9 lg:px-16 py-16 sm:py-22 overflow-hidden scroll-mt-24 outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg pointer-events-auto"
+      className="relative w-full min-h-[min(88vh,760px)] bg-bg px-5.5 sm:px-9 lg:px-16 py-16 sm:py-22 overflow-hidden scroll-mt-24 outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg pointer-events-auto"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -174,16 +174,18 @@ export function SportStatsSlideshow({
     >
       <div className="max-w-7xl mx-auto w-full relative">
         <div
-          className="absolute right-0 top-0 z-10 hidden md:flex flex-col items-center gap-1 w-[5.5rem] lg:w-[6.25rem] border-4 border-ink bg-paper p-2 shadow-brutal-md"
+          className="absolute right-0 top-0 z-10 hidden md:flex flex-col items-stretch w-[5.5rem] lg:w-[6.25rem] border-4 border-ink bg-ink overflow-hidden shadow-brutal-md"
           aria-hidden
         >
-          <img
-            src={trophy.image}
-            alt=""
-            className="w-full aspect-square object-contain p-0.5"
-            loading="lazy"
-            decoding="async"
-          />
+          <div className="relative aspect-square w-full shrink-0 overflow-hidden">
+            <img
+              src={trophy.image}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         </div>
 
         <div className="eyebrow mb-5">{eyebrow}</div>

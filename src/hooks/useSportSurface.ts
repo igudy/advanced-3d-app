@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { pickFocalSurfaceKey } from '../lib/focalSurface'
 
 type Surface = {
   bg: string
@@ -111,59 +112,8 @@ function applySurface(id: string | null) {
 
 export function useSportSurface() {
   useEffect(() => {
-    const els = () =>
-      Array.from(
-        document.querySelectorAll<HTMLElement>('[data-surface]'),
-      )
-
     const pick = () => {
-      const vh = window.innerHeight
-      const vw = window.innerWidth
-      const focalY = vh * 0.42
-      const focalX = vw * 0.5
-
-      let best: HTMLElement | null = null
-
-      /** Prefer the band that actually contains the focal point (typical reading line). */
-      const hit = els().filter((el) => {
-        const r = el.getBoundingClientRect()
-        return (
-          focalX >= r.left &&
-          focalX <= r.right &&
-          focalY >= r.top &&
-          focalY <= r.bottom
-        )
-      })
-
-      if (hit.length > 0) {
-        hit.sort(
-          (a, b) =>
-            a.getBoundingClientRect().height - b.getBoundingClientRect().height,
-        )
-        best = hit[0]!
-      } else {
-        const mid = vh * 0.42
-        let bestScore = -1
-        for (const el of els()) {
-          const r = el.getBoundingClientRect()
-          if (r.bottom < 0 || r.top > vh) continue
-          const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0)
-          const center = (r.top + r.bottom) / 2
-          const dist = Math.abs(center - mid)
-          const score = visible * 1.2 - dist * 0.15
-          if (score > bestScore) {
-            bestScore = score
-            best = el
-          }
-        }
-      }
-
-      const attr = best?.getAttribute('data-surface')?.trim() ?? ''
-      const surfaceId =
-        attr && Object.prototype.hasOwnProperty.call(SURFACES, attr)
-          ? attr
-          : null
-      applySurface(surfaceId)
+      applySurface(pickFocalSurfaceKey())
     }
 
     const tick = () => pick()
