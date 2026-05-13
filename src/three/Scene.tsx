@@ -32,7 +32,7 @@ export function Scene() {
     <Canvas
       className="scene-canvas"
       camera={{ position: [0, 0, 5.0], fov: 35 }}
-      dpr={[1, 1.5]}
+      dpr={[1, 1.25]}
       gl={{
         antialias: true,
         alpha: true,

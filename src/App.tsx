@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Frame } from './components/Frame'
 import { Nav } from './components/Nav'
@@ -9,7 +9,6 @@ import { SportGreats } from './sections/Greats'
 import { FOOTBALL, BASKETBALL, TENNIS } from './sections/greatsConfig'
 import { SportBridge } from './sections/SportBridge'
 import { CTASection } from './sections/CTASection'
-import { SportStatsSlideshow } from './sections/GreatsStatsSlideshow'
 import {
   BASKETBALL_STAT_SLIDES,
   FOOTBALL_STAT_SLIDES,
@@ -22,6 +21,14 @@ import { ThemeProvider } from './theme/ThemeProvider'
 import './App.css'
 
 const Scene = lazy(() => import('./three/Scene').then((m) => ({ default: m.Scene })))
+
+const SportStatsSlideshow = lazy(() =>
+  import('./sections/GreatsStatsSlideshow').then((m) => ({ default: m.SportStatsSlideshow })),
+)
+
+const statsSlideFallback: ReactNode = (
+  <div className="min-h-[min(88vh,760px)] w-full bg-transparent" aria-hidden />
+)
 
 function App() {
   useEffect(() => initScroll(), [])
@@ -133,15 +140,17 @@ function App() {
 
         <SportGreats config={FOOTBALL} />
 
-        <SportStatsSlideshow
-          id="greats-stats-football"
-          surface="football"
-          slides={FOOTBALL_STAT_SLIDES}
-          eyebrow="Football · tape"
-          titleLine1="TAPE"
-          titleLine2="DOESN’T LIE."
-          trophy={FOOTBALL.trophy}
-        />
+        <Suspense fallback={statsSlideFallback}>
+          <SportStatsSlideshow
+            id="greats-stats-football"
+            surface="football"
+            slides={FOOTBALL_STAT_SLIDES}
+            eyebrow="Football · tape"
+            titleLine1="TAPE"
+            titleLine2="DOESN’T LIE."
+            trophy={FOOTBALL.trophy}
+          />
+        </Suspense>
 
         <SportBridge
           id="football-after"
@@ -183,15 +192,17 @@ function App() {
 
         <SportGreats config={BASKETBALL} />
 
-        <SportStatsSlideshow
-          id="greats-stats-basketball"
-          surface="basketball"
-          slides={BASKETBALL_STAT_SLIDES}
-          eyebrow="Basketball · tape"
-          titleLine1="WOOD"
-          titleLine2="DOESN’T LIE."
-          trophy={BASKETBALL.trophy}
-        />
+        <Suspense fallback={statsSlideFallback}>
+          <SportStatsSlideshow
+            id="greats-stats-basketball"
+            surface="basketball"
+            slides={BASKETBALL_STAT_SLIDES}
+            eyebrow="Basketball · tape"
+            titleLine1="WOOD"
+            titleLine2="DOESN’T LIE."
+            trophy={BASKETBALL.trophy}
+          />
+        </Suspense>
 
         <SportBridge
           id="basketball-after"
@@ -234,15 +245,17 @@ function App() {
 
         <SportGreats config={TENNIS} />
 
-        <SportStatsSlideshow
-          id="greats-stats-tennis"
-          surface="tennis"
-          slides={TENNIS_STAT_SLIDES}
-          eyebrow="Tennis · tape"
-          titleLine1="FELT"
-          titleLine2="DOESN’T LIE."
-          trophy={TENNIS.trophy}
-        />
+        <Suspense fallback={statsSlideFallback}>
+          <SportStatsSlideshow
+            id="greats-stats-tennis"
+            surface="tennis"
+            slides={TENNIS_STAT_SLIDES}
+            eyebrow="Tennis · tape"
+            titleLine1="FELT"
+            titleLine2="DOESN’T LIE."
+            trophy={TENNIS.trophy}
+          />
+        </Suspense>
 
         <SportBridge
           id="tennis-after"

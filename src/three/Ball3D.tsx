@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import { useFBX, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
@@ -166,8 +166,11 @@ function useSoccer() {
           clearcoat: 0.2,
           clearcoatRoughness: 0.45,
           envMapIntensity: 0.7,
-          transparent: true,
+          transparent: false,
+          opacity: 1,
+          transmission: 0,
           depthWrite: true,
+          depthTest: true,
         })
       }
     })
@@ -240,8 +243,11 @@ function buildTennisFromGltf(scene: THREE.Object3D) {
       nm.metalness = Math.min(1, nm.metalness)
       nm.roughness = Math.min(1, Math.max(0, nm.roughness))
       nm.envMapIntensity = 0.48
-      nm.transparent = true
+      nm.transparent = false
+      nm.opacity = 1
       nm.depthWrite = true
+      nm.depthTest = true
+      nm.side = THREE.FrontSide
       next.push(nm)
     }
     mesh.material = next.length === 1 ? next[0]! : next
@@ -259,6 +265,20 @@ function useTennis() {
    Opacity helper — sets material.opacity recursively
    ------------------------------------------------------------------ */
 
+function applyMaterialOpacity(mat: THREE.Material, opacity: number) {
+  const o = THREE.MathUtils.clamp(opacity, 0, 1)
+  const solid = o >= 0.998
+  mat.opacity = o
+  mat.transparent = !solid
+  mat.depthWrite = true
+  mat.depthTest = true
+  const phys = mat as THREE.MeshPhysicalMaterial
+  if (phys.isMeshPhysicalMaterial) {
+    phys.transmission = 0
+    phys.thickness = 0
+  }
+}
+
 function setOpacity(group: THREE.Object3D | null, opacity: number) {
   if (!group) return
   group.visible = opacity > 0.01
@@ -266,9 +286,9 @@ function setOpacity(group: THREE.Object3D | null, opacity: number) {
     const m = (c as THREE.Mesh).material
     if (!m) return
     if (Array.isArray(m)) {
-      for (const mat of m) (mat as THREE.Material & { opacity: number }).opacity = opacity
+      for (const mat of m) applyMaterialOpacity(mat as THREE.Material, opacity)
     } else {
-      ;(m as THREE.Material & { opacity: number }).opacity = opacity
+      applyMaterialOpacity(m as THREE.Material, opacity)
     }
   })
 }
@@ -289,12 +309,24 @@ export function Ball3D() {
   const lastClientX = useRef(0)
   const tripleSm = useRef(0)
   const mergeSm = useRef(0)
+  const focalCache = useRef<{ surface: string | null; greats: { triple: number; merge: number } }>({
+    surface: null,
+    greats: { triple: 0, merge: 0 },
+  })
+  const domSample = useRef(0)
   const { viewport, gl } = useThree()
   const tmp = useMemo(() => new THREE.Vector3(), [])
 
   const soccer = useSoccer()
   const basket = useBasketball()
   const tennis = useTennis()
+
+  useLayoutEffect(() => {
+    focalCache.current = {
+      surface: pickFocalSurfaceKey(),
+      greats: readGreatsScrollState(),
+    }
+  }, [])
 
   useEffect(() => {
     const el = gl.domElement
@@ -322,10 +354,18 @@ export function Ball3D() {
   useFrame((state, delta) => {
     if (!group.current) return
 
+    domSample.current += 1
+    if (domSample.current % 2 === 0) {
+      focalCache.current = {
+        surface: pickFocalSurfaceKey(),
+        greats: readGreatsScrollState(),
+      }
+    }
+    const surfaceKey = focalCache.current.surface
+    const { triple: tripleTarget, merge: mergeTarget } = focalCache.current.greats
+
     const p = scroll.progress
     const wp = sampleScrollPath(p)
-
-    const { triple: tripleTarget, merge: mergeTarget } = readGreatsScrollState()
     tripleSm.current = damp(tripleSm.current, tripleTarget, 11, delta)
     mergeSm.current = damp(mergeSm.current, mergeTarget, 13, delta)
     const triple = tripleSm.current
@@ -335,7 +375,6 @@ export function Ball3D() {
     /** Kill damped tail once merge intent is done — avoids one-frame ghost stack */
     if (mergeTarget > 0.97 && spread < 0.05) spread = 0
 
-    const surfaceKey = pickFocalSurfaceKey()
     const pOpacity = morphProgressForBallOpacity(p, surfaceKey)
 
     const halfW = (viewport.width / 2) * 0.85
@@ -438,7 +477,7 @@ export function Ball3D() {
           if (!dragging.current) gl.domElement.style.cursor = ''
         }}
       >
-        <sphereGeometry args={[0.98, 56, 56]} />
+        <sphereGeometry args={[0.98, 40, 40]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       <group ref={soccerRef}>
